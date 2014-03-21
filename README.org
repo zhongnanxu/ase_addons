@@ -1,5 +1,4 @@
-ase_addons
-==========
+* ase_addons
 
 =ase_addons= is a module that stores bulk structures, surfaces, and other convenience functions that I have created and used during my PhD. Usage of this requires the atomic simulation environment (ASE).
 
