@@ -167,6 +167,30 @@ def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
                      cell=(a1, a2, a3))
         return bulk
 
+def cubic_rocksalt(symbols, a=None, mags=(2, 2), vol=None):
+    if a == None and vol == None:
+        raise TypeError('Please provide either a lattice or volume')
+    elif a != None and vol != None:
+        raise TypeError('Cannot provide both lattice constant and volume')
+    elif vol != None:
+        a = (2 * vol) ** (1/3) * 4
+        
+    a1 = a * np.array([1, 0, 0])
+    a2 = a * np.array([0, 1, 0])
+    a3 = a * np.array([0, 0, 1])
+
+    bulk = Atoms([Atom(symbols[0], (0, 0, 0), magmom=mags[0]),
+                  Atom(symbols[0], 0.5*a1 + 0.5*a2, magmom=mags[0]),
+                  Atom(symbols[0], 0.5*a2 + 0.5*a3, magmom=mags[0]),
+                  Atom(symbols[0], 0.5*a1 + 0.5*a3, magmom=mags[0]),
+                  Atom(symbols[1], 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=mags[1]),
+                  Atom(symbols[1], 0.5*a1, magmom=mags[1]),
+                  Atom(symbols[1], 0.5*a2, magmom=mags[1]),
+                  Atom(symbols[1], 0.5*a3, magmom=mags[1])],
+                 cell = (a1, a2, a3))
+    return bulk
+                       
+
 def read_rhombo_rocksalt(bulk):
     ''' Returns the unit cell length and degree between unit cell vectors for
     a rhombohedral, anti-ferromagnetic cell
@@ -707,7 +731,7 @@ def I_43m(symbol='Mn', a=8.9125, xc=0.317, xg1=0.356, zg1=0.042, xg2=0.089, zg2=
                  cell=(a1, a2, a3))
     return bulk
 
-def MOH2(symbols, a=3.184, c=4.617, u=0.43, z=0.22, mags=(0.5, 0), afm=False):
+def MO2H2(symbols, a=3.184, c=4.617, u=0.43, z=0.22, mags=(0.5, 0), afm=False):
     '''Returns a brucite crystal structure. This is a common crystal structure
     of Ni(OH)2
     
@@ -761,6 +785,203 @@ def MOH2(symbols, a=3.184, c=4.617, u=0.43, z=0.22, mags=(0.5, 0), afm=False):
             c.append(FixScaled(cell=atoms.cell, a=atom.index, mask=(0, 0, 0)))
     atoms.set_constraint(c)
     return atoms
+
+def MOOH(symbols, a=3.184, c=4.617, z=0.22, mags=(0.5, 0), afm=False):
+    '''Returns a brucite crystal structure. This is a common crystal structure
+    of Ni(OH)2
+    
+    Parameters
+    ----------
+    symbols: tuple
+        The atoms of the unit cell. The hydrogen atom is implied.
+    a: flt
+        The a lattice parameter of the unit cell
+    c: flt
+        The c lattice parameter of the unit cell
+    z: flt
+        The oxygen position coordinate
+    mags: tuple
+        The initial magnetic moment of the metal and oxygen ion
+    '''
+    
+    a1 = np.array((0.5*a, -0.5*3**0.5*a, 0))
+    a2 = np.array((0.5*a, 0.5*3**0.5*a, 0))
+    a3 = np.array((0, 0, c))
+    atoms = Atoms([Atom('H', 2./3*a1 + 1./3*a2, magmom=0),
+                   Atom(symbols[1], 2./3*a1 + 1./3*a2 + (0.5-z)*a3, magmom=mags[1]),               
+                   Atom(symbols[0], 0.5*a3, magmom=mags[0]),
+                   Atom(symbols[1], 1./3*a1 + 2./3*a2 + (0.5+z)*a3, magmom=mags[1]),
+                   
+                   Atom('H', 1./3*a1 + 2./3*a2 + a3, magmom=0),
+                   Atom(symbols[1], 1./3*a1 + 2./3*a2 + (1.5-z)*a3, magmom=mags[1]),               
+                   Atom(symbols[0], 2./3*a1 + 1./3*a2 + 1.5*a3, magmom=mags[0]),
+                   Atom(symbols[1], (1.5+z)*a3, magmom=mags[1]),
+                   
+                   Atom('H', 2*a3, magmom=0),
+                   Atom(symbols[1], (2.5-z)*a3, magmom=mags[1]),
+                   Atom(symbols[0], 1./3*a1 + 2./3*a2 + 2.5*a3, magmom=mags[0]),
+                   Atom(symbols[1], 2./3*a1 + 1./3*a2 + (2.5+z)*a3, magmom=mags[1])],
+                  cell=(a1, a2, 3*a3))
+
+    
+    c = []
+    for atom in atoms:
+        if atom.symbol in (symbols[0], 'H'):
+            c.append(FixScaled(cell=atoms.cell, a=atom.index, mask=(1, 1, 1)))
+        elif atom.symbol == symbols[1]:
+            c.append(FixScaled(cell=atoms.cell, a=atom.index, mask=(1, 1, 0)))
+        else:
+            c.append(FixScaled(cell=atoms.cell, a=atom.index, mask=(0, 0, 0)))
+    atoms.set_constraint(c)
+    return atoms
+
+def gMOOH_old(symbols, a=2.8295, c=20.9472, z=0.612, mags=(0.5, 0), electrolyte='K'):
+    A = symbols[0]
+    B = symbols[1]
+    C = electrolyte
+    d = 0.9
+    hx = 0.7
+    hz = 0.105
+    h2x = .27
+    h2z = .03
+    a1 = np.array((0.5*a, -0.5*3**0.5*a, 0))
+    a2 = np.array((0.5*a, 0.5*3**0.5*a, 0))
+    a3 = np.array((0, 0, c))
+    b1 = 2 * a1 + a2
+    b2 = 2 * a2 + a1
+    c1 = a1 + a2
+    c2 = 2*a1 + 2*a2
+    r1 = 2./3.*a1 + 1./3.*a2 + 1./3.*a3
+    r2 = 1./3.*a1 + 2./3.*a2 + 2./3.*a3
+
+    atoms = Atoms([Atom(A, np.array((0, 0, 0))),
+                   Atom(C, 1./2.*a1 + 1./2.*a2 + 1./2.*a3),
+                   Atom(B, (1./2. + d)*a1 + (1./2. + d)*a2 + 1./2.*a3),
+                   Atom('H', (1./2. + hx)*a1 + (1./2. + hx)*a2 + (1./2. + hz/3)*a3),
+                   Atom('H', (1./2. + hx)*a1 + (1./2. + hx)*a2 + (1./2. - hz/3)*a3),
+                   Atom(B, (1./2. - d)*a1 + (1./2. - d)*a2 + 1./2.*a3 + b1 + b2),
+                   Atom('H', (1./2. - hx)*a1 + (1./2. - hx)*a2 + (1./2. + hz/3)*a3 + b1 + b2),
+                   Atom('H', (1./2. - hx)*a1 + (1./2. - hx)*a2 + (1./2. - hz/3)*a3 + b1 + b2),
+                   Atom(A, r1),
+                   Atom(A, r2),
+                   Atom(B, z * a3),
+                   Atom(B, (1 - z) * a3),
+                   Atom(B, z * a3 + r1),
+                   Atom('H', -(h2x*a1 + h2x*a2) + (z - h2z) * a3 + r1),
+                   Atom('H', (h2x*a1 + h2x*a2) + (z - h2z) * a3 + r1),
+                   Atom('H', -(h2x*a1 + h2x*a2) + (1 - z + h2z) * a3 + r1),
+                   Atom('H', (h2x*a1 + h2x*a2) + (1 - z + h2z) * a3 + r1),
+                   Atom(B, (1 - z) * a3 + r1),
+                   Atom(B, (z - 1) * a3 + r2),
+                   Atom(B, (-z) * a3 + r2),
+                   
+                   Atom(A, np.array((0, 0, 0)) + c1),
+                   Atom(A, r1 + c1),
+                   Atom(C, 1./2.*a1 + 1./2.*a2 + 1./2.*a3 + r1 + c1),
+                   Atom(B, (1./2. + d)*a1 + (1./2. + d)*a2 + 1./2.*a3 + r1 + c1),
+                   Atom('H', (1./2. + hx)*a1 + (1./2. + hx)*a2 + (1./2. + hz/3)*a3 + r1 + c1),
+                   Atom('H', (1./2. + hx)*a1 + (1./2. + hx)*a2 + (1./2. - hz/3)*a3 + r1 + c1),
+                   Atom(B, (1./2. - d)*a1 + (1./2. - d)*a2 + 1./2.*a3 + r1 + c1),
+                   Atom('H', (1./2. - hx)*a1 + (1./2. - hx)*a2 + (1./2. + hz/3)*a3 + r1 + c1),
+                   Atom('H', (1./2. - hx)*a1 + (1./2. - hx)*a2 + (1./2. - hz/3)*a3 + r1 + c1),
+                   Atom(A, r2 + c1),
+                   Atom(B, z * a3 + c1),
+                   Atom(B, (1 - z) * a3 + c1),
+                   Atom(B, z * a3 + r1 + c1),
+                   Atom(B, (1 - z) * a3 + r1 + c1),
+                   Atom(B, (z - 1) * a3 + r2 + c1),
+                   Atom('H', -(h2x*a1 + h2x*a2) + (z - 1 - h2z) * a3 + r2 + c1),
+                   Atom('H', (h2x*a1 + h2x*a2) + (z - 1 - h2z) * a3 + r2 + c1),
+                   Atom('H', -(h2x*a1 + h2x*a2) + (-z + h2z) * a3 + r2 + c1),
+                   Atom('H', (h2x*a1 + h2x*a2) + (-z + h2z) * a3 + r2 + c1),
+                   Atom(B, (-z) * a3 + r2 + c1),
+                   
+                   Atom(A, np.array((0, 0, 0)) + c2),
+                   Atom(A, r1 + c2),
+                   Atom(A, r2 + c2),
+                   Atom(C, 1./2.*a1 + 1./2.*a2 + 1./2.*a3 + r2 - a3 + c2 - b2),
+                   Atom(B, (1./2. + d)*a1 + (1./2. + d)*a2 + 1./2.*a3 + r2 - a3 + c2 - b2 - b1),
+                   Atom('H', (1./2. + hx)*a1 + (1./2. + hx)*a2 + (1./2. + hz/3)*a3 + r2 - a3 + c2 - b2 - b1),
+                   Atom('H', (1./2. + hx)*a1 + (1./2. + hx)*a2 + (1./2. - hz/3)*a3 + r2 - a3 + c2 - b2 - b1),
+                   Atom(B, (1./2. - d)*a1 + (1./2. - d)*a2 + 1./2.*a3 + r2 - a3 + c2),
+                   Atom('H', (1./2. - hx)*a1 + (1./2. - hx)*a2 + (1./2. + hz/3)*a3 + r2 - a3 + c2),
+                   Atom('H', (1./2. - hx)*a1 + (1./2. - hx)*a2 + (1./2. - hz/3)*a3 + r2 - a3 + c2),
+                   Atom(B, z * a3 + c2),
+                   Atom('H', -(h2x*a1 + h2x*a2) + (z - h2z) * a3 + c2),
+                   Atom('H', (h2x*a1 + h2x*a2) + (z - h2z) * a3 + c2),
+                   Atom('H', -(h2x*a1 + h2x*a2) + (1 - z + h2z) * a3 + c2),
+                   Atom('H', (h2x*a1 + h2x*a2) + (1 - z + h2z) * a3 + c2),
+                   Atom(B, (1 - z) * a3 + c2),
+                   Atom(B, z * a3 + r1 + c2),
+                   Atom(B, (1 - z) * a3 + r1 + c2),
+                   Atom(B, (z - 1) * a3 + r2 + c2),
+                   Atom(B, (-z) * a3 + r2 + c2)],
+                  cell=(b1, b2, a3))
+
+    return atoms
+
+def gMOOH(symbols, a=5.1, b=9.1, c=6.84, mag=0.5, electrolyte='K'):
+    A = symbols[0]
+    B = symbols[1]
+    C = electrolyte
+
+    a1 = np.array([a, 0, 0])
+    a2 = np.array([0, b, 0])
+    a3 = np.array([c * np.cos(74.3 * np.pi / 180), 0, 
+                   c * np.sin(74.3 * np.pi / 180)])
+    r1 = 0.5 * a1 + 0.5 * a2
+    
+    atoms = Atoms([Atom(A, np.array([0, 0, 0]), magmom=mag),
+                   Atom(A, r1, magmom=mag),
+                   Atom(A, 0.2891 * a2, magmom=mag),
+                   Atom(A, -0.2891 * a2, magmom=mag),
+                   Atom(A, 0.2891 * a2 + r1, magmom=mag),
+                   Atom(A, -0.2891 * a2 + r1, magmom=mag),
+                   Atom(B, 0.2939 * a2 + 0.5 * a3),
+                   Atom(B, -0.2939 * a2 + 0.5 * a3),
+                   Atom(B, 0.2939 * a2 + 0.5 * a3 + r1),
+                   Atom(B, -0.2939 * a2 + 0.5 * a3 + r1),
+                   Atom(B, 0.3739 * a1 + 0.2491 * a3),
+                   Atom(B, -0.3739 * a1 + -0.2491 * a3),
+                   Atom(B, 0.3739 * a1 + 0.2491 * a3 + r1),
+                   Atom(B, -0.3739 * a1 + -0.2491 * a3 + r1),
+                   Atom(B, 0.3718 * a1 + 0.6564 * a2 + 0.1480 * a3),
+                   Atom(B, -0.3718 * a1 + 0.6564 * a2 + -0.1480 * a3),
+                   Atom(B, -0.3718 * a1 + -0.6564 * a2 + -0.1480 * a3),
+                   Atom(B, 0.3718 * a1 + -0.6564 * a2 + 0.1480 * a3),
+                   Atom(B, 0.3718 * a1 + 0.6564 * a2 + 0.1480 * a3 + r1),
+                   Atom(B, -0.3718 * a1 + 0.6564 * a2 + -0.1480 * a3 + r1),
+                   Atom(B, -0.3718 * a1 + -0.6564 * a2 + -0.1480 * a3 + r1),
+                   Atom(B, 0.3718 * a1 + -0.6564 * a2 + 0.1480 * a3 + r1),
+                   
+                   Atom('H', 0.4620 * a1 + 0.2643 * a2 + 0.3651 * a3),
+                   Atom('H', -0.4620 * a1 + 0.2643 * a2 + -0.3651 * a3),
+                   Atom('H', -0.4620 * a1 + -0.2643 * a2 + -0.3651 * a3),
+                   Atom('H', 0.4620 * a1 + -0.2643 * a2 + 0.3651 * a3),
+                   Atom('H', 0.4620 * a1 + 0.2643 * a2 + 0.3651 * a3 + r1),
+                   Atom('H', -0.4620 * a1 + 0.2643 * a2 + -0.3651 * a3 + r1),
+                   Atom('H', -0.4620 * a1 + -0.2643 * a2 + -0.3651 * a3 + r1),
+                   Atom('H', 0.4620 * a1 + -0.2643 * a2 + 0.3651 * a3 + r1),
+                   
+                   Atom('H', 0.4042 * a1 + 0.0802 * a2 + 0.3435 * a3),
+                   Atom('H', -0.4042 * a1 + 0.0802 * a2 + -0.3435 * a3),
+                   Atom('H', -0.4042 * a1 + -0.0802 * a2 + -0.3435 * a3),
+                   Atom('H', 0.4042 * a1 + -0.0802 * a2 + 0.3435 * a3),
+                   Atom('H', 0.4042 * a1 + 0.0802 * a2 + 0.3435 * a3 + r1),
+                   Atom('H', -0.4042 * a1 + 0.0802 * a2 + -0.3435 * a3 + r1),
+                   Atom('H', -0.4042 * a1 + -0.0802 * a2 + -0.3435 * a3 + r1),
+                   Atom('H', 0.4042 * a1 + -0.0802 * a2 + 0.3435 * a3 + r1),
+                   
+                   Atom(C, 0.5 * a3),
+                   Atom(C, 0.5 * a3 + r1)],
+                  
+                  cell=(a1, a2, a3))
+    
+    pos = atoms.get_scaled_positions()
+    atoms.set_scaled_positions(pos % [1, 1, 1])
+    
+    return atoms
+
                   
 def set_volume(self, vol):
     '''This is short function to quickly isotropically expand/reduce the
