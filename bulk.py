@@ -100,13 +100,13 @@ def rocksalt(symbols, a=None, mags=(2, 2), vol=None, afm=True):
         return bulk
     else:
         bulk = Atoms([Atom(symbols[0], (0.0, 0.0, 0.0), magmom=mags[0]),
-                      Atom(symbols[1], (b/2., b/2., b/2.), magmom=mags[1])],
+                      Atom(symbols[1], (b, b, b), magmom=mags[1])],
                      cell=((0, b, b),
                            (b, 0, b),
                            (b, b, 0)))
         return bulk
 
-def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
+def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True, afm=True):
     '''Returns a rhombohedral rocksalt atoms object
 
     Parameters
@@ -131,12 +131,18 @@ def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
         The initial magnetic moment of the 1st and 2nd atom
     '''
 
+    up = mags[0]
+    if afm == False:
+        down = mags[0]
+    else:
+        down = -mags[0]
+
     if primitive == True:
         a1 = np.array((b, a, a))
         a2 = np.array((a, b, a))
         a3 = np.array((a, a, b))
-        bulk = Atoms([Atom(symbols[0], (0.0, 0.0, 0.0), magmom=mags[0]),
-                      Atom(symbols[0], 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=-mags[0]),
+        bulk = Atoms([Atom(symbols[0], (0.0, 0.0, 0.0), magmom=up),
+                      Atom(symbols[0], 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=down),
                       Atom(symbols[1], 0.25*a1 + 0.25*a2 + 0.25*a3, magmom=mags[1]),
                       Atom(symbols[1], 0.75*a1 + 0.75*a2 + 0.75*a3, magmom=mags[1])],
                      cell=[a1, a2, a3])
@@ -148,14 +154,14 @@ def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
         a1 = 2 * np.array((c, b, b))
         a2 = 2 * np.array((b, c, b))
         a3 = 2 * np.array((b, b, c))
-        bulk = Atoms([Atom(symbols[0], (0, 0, 0), magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2, magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a1 + 0.5 * a3, magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a2 + 0.5 * a3, magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a1, magmom=-mags[0]),
-                      Atom(symbols[0], 0.5 * a2, magmom=-mags[0]),
-                      Atom(symbols[0], 0.5 * a3, magmom=-mags[0]),
-                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2 + 0.5 * a3, magmom=-mags[0]),
+        bulk = Atoms([Atom(symbols[0], (0, 0, 0), magmom=up),
+                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2, magmom=up),
+                      Atom(symbols[0], 0.5 * a1 + 0.5 * a3, magmom=up),
+                      Atom(symbols[0], 0.5 * a2 + 0.5 * a3, magmom=up),
+                      Atom(symbols[0], 0.5 * a1, magmom=down),
+                      Atom(symbols[0], 0.5 * a2, magmom=down),
+                      Atom(symbols[0], 0.5 * a3, magmom=down),
+                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2 + 0.5 * a3, magmom=down),
                       Atom(symbols[1], 0.25 * a1 + 0.25 * a2 + 0.25 * a3, magmom=mags[1]),
                       Atom(symbols[1], 0.75 * a1 + 0.25 * a2 + 0.25 * a3, magmom=mags[1]),
                       Atom(symbols[1], 0.25 * a1 + 0.75 * a2 + 0.25 * a3, magmom=mags[1]),
@@ -363,7 +369,6 @@ def Co3O4(symbols, a=None, u=0.379, mags=(2, 2, 2), vol=None):
     bulk.set_constraint(c)
 
     return bulk
-
     
 def corundum(symbols, chex=None, c_over_a=2.766, z=0.144, x=0.309, mags=(2, 2),
              vol=None):
