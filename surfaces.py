@@ -3,7 +3,6 @@ from __future__ import division
 
 from ase import Atom, Atoms
 from ase.constraints import FixAtoms, FixScaled
-from myvasp import condense
 import numpy as np
 
 def rocksalt100(symbol, a, area=(2,1), layers=4, vacuum=0, afm=True, mag=2.,
@@ -1242,3 +1241,24 @@ def rotate_111(atoms):
     atoms.set_scaled_positions(scaled_pos)
     
     return atoms
+
+def condense(atoms):
+    # First, create a set of the magmoms
+    magmoms = list(set(atoms.get_initial_magnetic_moments()))
+
+    # Now, make lists to store each atom of type
+    temp = []
+    for i in magmoms:
+        temp.append([])
+    for atom in atoms:
+        i = 0
+        for magmom in magmoms:
+            if atom.magmom == magmom:
+                atom.cut_reference_to_atoms()
+                temp[i].append(atom)
+            i += 1
+    new_atoms = Atoms(cell=atoms.get_cell())
+    for group in temp:
+        for atom in group:
+            new_atoms.extend(atom)
+    return new_atoms
