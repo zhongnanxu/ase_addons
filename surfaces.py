@@ -3,7 +3,6 @@ from __future__ import division
 
 from ase import Atom, Atoms
 from ase.constraints import FixAtoms, FixScaled
-from myvasp import condense
 import numpy as np
 
 def rocksalt100(symbol, a, area=(2,1), layers=4, vacuum=0, afm=True, mag=2.,
@@ -127,7 +126,7 @@ def rocksalt100(symbol, a, area=(2,1), layers=4, vacuum=0, afm=True, mag=2.,
     slab = slab*(area[0], area[1], 1)
     if vacuum != 0:
         slab.center(vacuum=vacuum, axis=2)
-    slab = condense(slab)
+    # slab = condense(slab)
     if fixlayers > 0:
         if fixrelax == True:
             c = []
@@ -391,7 +390,7 @@ def spinel111(symbol, a, x, area=(1,1), layers=18, vacuum=0,
    slab = slab*(area[0], area[1], 1)
    if vacuum != 0:
        slab.center(vacuum=vacuum, axis=2)
-   slab = condense(slab)
+   # slab = condense(slab)
    if fixlayers > 0:
        c = FixAtoms(indices=[atom.index for atom in slab if atom.tag == 1])
        slab.set_constraint(c)
@@ -817,7 +816,7 @@ def inverse_spinel111(symbol, a, x, area=(1,1), layers=18, vacuum=0,
    slab = slab*(area[0], area[1], 1)
    if vacuum != 0:
        slab.center(vacuum=vacuum, axis=2)
-   slab = condense(slab)
+   # slab = condense(slab)
    if fixlayers > 0:
        c = FixAtoms(indices=[atom.index for atom in slab if atom.tag == 1])
        slab.set_constraint(c)
@@ -1043,7 +1042,7 @@ def corundum0001(symbol=('Fe', 'O'), chex=13, ahex=5, z=0.144, x=0.31, area=(1,1
     slab = slab*(area[0], area[1], 1)
     if vacuum != 0:
         slab.center(vacuum=vacuum, axis=2)
-    slab = condense(slab)
+    # slab = condense(slab)
     if fixlayers > 0:
         c = FixAtoms(indices=[atom.index for atom in slab if atom.tag == 1])
         slab.set_constraint(c)
