@@ -35,7 +35,6 @@ def rocksalt100(symbol, a, area=(2,1), layers=4, vacuum=0, afm=True, mag=2.,
         In order for the symmetric slab to be correct, you MUST specify
         an odd number of slabs for both fixlayers and layers.
     """
-    fixlayers -= 1
     if afm == False:
         # One layer is a 2x2x2 surface
         slab = Atoms([Atom(symbol[0],(0.,  0.,  0.)),  # Layer one
@@ -59,6 +58,7 @@ def rocksalt100(symbol, a, area=(2,1), layers=4, vacuum=0, afm=True, mag=2.,
         slab = Atoms(cell=(a1,a2,a3))
         # Differentiate between symmetric and asymmetric relaxation
         if symmetry == True and fixlayers > 0:
+            fixlayers -= 1
             mid_layer = layers // 2 - 0.5
             fixlayers = [mid_layer - fixlayers//2 - 1,
                          mid_layer + fixlayers//2 + 1]
@@ -1241,3 +1241,26 @@ def rotate_111(atoms):
     atoms.set_scaled_positions(scaled_pos)
     
     return atoms
+
+def anatase001
+
+def condense(atoms):
+    # First, create a set of the magmoms
+    magmoms = list(set(atoms.get_initial_magnetic_moments()))
+
+    # Now, make lists to store each atom of type
+    temp = []
+    for i in magmoms:
+        temp.append([])
+    for atom in atoms:
+        i = 0
+        for magmom in magmoms:
+            if atom.magmom == magmom:
+                atom.cut_reference_to_atoms()
+                temp[i].append(atom)
+            i += 1
+    new_atoms = Atoms(cell=atoms.get_cell())
+    for group in temp:
+        for atom in group:
+            new_atoms.extend(atom)
+    return new_atoms

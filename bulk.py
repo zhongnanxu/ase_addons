@@ -100,13 +100,13 @@ def rocksalt(symbols, a=None, mags=(2, 2), vol=None, afm=True):
         return bulk
     else:
         bulk = Atoms([Atom(symbols[0], (0.0, 0.0, 0.0), magmom=mags[0]),
-                      Atom(symbols[1], (b/2., b/2., b/2.), magmom=mags[1])],
+                      Atom(symbols[1], (b, b, b), magmom=mags[1])],
                      cell=((0, b, b),
                            (b, 0, b),
                            (b, b, 0)))
         return bulk
 
-def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
+def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True, afm=True):
     '''Returns a rhombohedral rocksalt atoms object
 
     Parameters
@@ -131,12 +131,18 @@ def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
         The initial magnetic moment of the 1st and 2nd atom
     '''
 
+    up = mags[0]
+    if afm == False:
+        down = mags[0]
+    else:
+        down = -mags[0]
+
     if primitive == True:
         a1 = np.array((b, a, a))
         a2 = np.array((a, b, a))
         a3 = np.array((a, a, b))
-        bulk = Atoms([Atom(symbols[0], (0.0, 0.0, 0.0), magmom=mags[0]),
-                      Atom(symbols[0], 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=-mags[0]),
+        bulk = Atoms([Atom(symbols[0], (0.0, 0.0, 0.0), magmom=up),
+                      Atom(symbols[0], 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=down),
                       Atom(symbols[1], 0.25*a1 + 0.25*a2 + 0.25*a3, magmom=mags[1]),
                       Atom(symbols[1], 0.75*a1 + 0.75*a2 + 0.75*a3, magmom=mags[1])],
                      cell=[a1, a2, a3])
@@ -148,14 +154,14 @@ def rhombo_rocksalt(symbols, a, b, mags=(2, 2), primitive=True):
         a1 = 2 * np.array((c, b, b))
         a2 = 2 * np.array((b, c, b))
         a3 = 2 * np.array((b, b, c))
-        bulk = Atoms([Atom(symbols[0], (0, 0, 0), magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2, magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a1 + 0.5 * a3, magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a2 + 0.5 * a3, magmom=mags[0]),
-                      Atom(symbols[0], 0.5 * a1, magmom=-mags[0]),
-                      Atom(symbols[0], 0.5 * a2, magmom=-mags[0]),
-                      Atom(symbols[0], 0.5 * a3, magmom=-mags[0]),
-                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2 + 0.5 * a3, magmom=-mags[0]),
+        bulk = Atoms([Atom(symbols[0], (0, 0, 0), magmom=up),
+                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2, magmom=up),
+                      Atom(symbols[0], 0.5 * a1 + 0.5 * a3, magmom=up),
+                      Atom(symbols[0], 0.5 * a2 + 0.5 * a3, magmom=up),
+                      Atom(symbols[0], 0.5 * a1, magmom=down),
+                      Atom(symbols[0], 0.5 * a2, magmom=down),
+                      Atom(symbols[0], 0.5 * a3, magmom=down),
+                      Atom(symbols[0], 0.5 * a1 + 0.5 * a2 + 0.5 * a3, magmom=down),
                       Atom(symbols[1], 0.25 * a1 + 0.25 * a2 + 0.25 * a3, magmom=mags[1]),
                       Atom(symbols[1], 0.75 * a1 + 0.25 * a2 + 0.25 * a3, magmom=mags[1]),
                       Atom(symbols[1], 0.25 * a1 + 0.75 * a2 + 0.25 * a3, magmom=mags[1]),
@@ -363,7 +369,6 @@ def Co3O4(symbols, a=None, u=0.379, mags=(2, 2, 2), vol=None):
     bulk.set_constraint(c)
 
     return bulk
-
     
 def corundum(symbols, chex=None, c_over_a=2.766, z=0.144, x=0.309, mags=(2, 2),
              vol=None):
@@ -982,7 +987,267 @@ def gMOOH(symbols, a=5.1, b=9.1, c=6.84, mag=0.5, electrolyte='K'):
     
     return atoms
 
-                  
+def anatase(B='Ti', X='O', a=3.7842, c=2*4.7573, z=0.0831):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c5.html
+    spacegroup 141 (I4_1/amd)
+
+    note: this is different than the structure in ref Phys Rev B 65, 224112
+
+    Basis Vectors:
+Atom    Lattice Coordinates                Cartesian Coordinates
+
+Ti -0.12500000  0.62500000  0.25000000     0.00000000  2.83815000  1.18932500
+Ti  0.12500000  0.37500000  0.75000000     1.89210000  2.83815000  3.56797500
+O  -0.08310000  0.16690000  0.16620000     0.00000000  0.94605000  0.79066326
+O  -0.33310000  0.41690000  0.66620000     0.00000000  2.83815000  3.16931326
+O   0.08310000 -0.16690000  0.83380000     1.89210000  0.94605000  3.96663674
+O   0.33310000  0.58310000  0.33380000     1.89210000  2.83815000  1.58798674
+    '''
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = a*np.array([0.0, 1.0, 0.0])
+    a3 = np.array([0.5*a, 0.5*a, 0.5*c])
+
+    atoms = Atoms([Atom(B, -0.125*a1 + 0.625*a2 + 0.25*a3),
+                   Atom(B,  0.125*a1 + 0.375*a2 + 0.75*a3),
+                   Atom(X, -z*a1 + (0.25-z)*a2 + 2.*z*a3),
+                   Atom(X, -(0.25+z)*a1 + (0.5-z)*a2 + (0.5+2*z)*a3),
+                   Atom(X, z*a1 - (0.25 - z)*a2 + (1-2*z)*a3),
+                   Atom(X, (0.25 + z)*a1 + (0.5 + z)*a2 + (0.5-2*z)*a3)],
+                   cell=[a1,a2,a3])
+
+    return atoms
+
+def baddeleyite(B='Zr', X='O', a=5.1454, b=5.2075, c=5.3107,
+                beta=1.40964425831,
+                x1=0.2758, x2=0.069, x3=0.451,
+                y1=0.0404, y2=0.342, y3=0.758,
+                z1=0.2089, z2=0.345, z3=0.4790):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/ZrO2.html
+    spacegroup 14 (P2_1/c)
+    Basis Vectors:
+Atom    Lattice Coordinates                Cartesian Coordinates
+
+B1 Zr  0.27580000  0.04040000  0.20890000     1.24109120  0.21038300  1.09503076
+B4 Zr -0.27580000  0.54040000  0.29110000    -1.66715659  2.81413300  1.52591409
+B3 Zr -0.27580000 -0.04040000 -0.20890000    -1.24109120 -0.21038300 -1.09503076
+B2 Zr  0.27580000  0.45960000  0.70890000     0.81502581  2.39336700  3.71597561
+B5  O   0.06900000  0.34200000  0.34500000     0.06104748  1.78096500  1.80845195
+B8  O  -0.06900000  0.84200000  0.15500000    -0.48711287  4.38471500  0.81249290
+B7  O  -0.06900000 -0.34200000 -0.34500000    -0.06104748 -1.78096500 -1.80845195
+B6  O   0.06900000  0.15800000  0.84500000    -0.36501791  0.82278500  4.42939680
+B9  O   0.45100000  0.75800000  0.47900000     1.91240476  3.94728500  2.51086517
+B12 O  -0.45100000  0.25800000  0.02100000    -2.33847015  1.34353500  0.11007968
+B11 O  -0.45100000 -0.75800000 -0.47900000    -1.91240476 -3.94728500 -2.51086517
+B10 O   0.45100000 -0.25800000  0.97900000     1.48633937 -1.34353500  5.13181002
+    '''
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = b*np.array([0.0, 1.0, 0.0])
+    a3 = (c*np.cos(beta)*np.array([1.0, 0.0, 0.0])
+          + c*np.sin(beta)*np.array([0.0, 0.0, 1.0]))
+
+    # these atoms are not in the order of the pretty vectors, but in the order of the coordinates listed at http://cst-www.nrl.navy.mil/lattice/struk.xmol/ZrO2.pos
+    atoms = Atoms([Atom(B,  x1*a1 + y1*a2 + z1*a3),                  #B1
+                   Atom(B, -x1*a1 + (0.5 + y1)*a2 + (0.5 - z1)*a3),  #B4
+                   Atom(B, -x1*a1 - y1*a2 - z1*a3),                  #B3
+                   Atom(B,  x1*a1 + (0.5 - y1)*a2 + (0.5+z1)*a3),    #B2
+                   Atom(X,  x2*a1 + y2*a2 + z2*a3),                  #B5
+                   Atom(X, -x2*a1 + (0.5 + y2)*a2 + (0.5 - z2)*a3),  #B8
+                   Atom(X, -x2*a1 - y2*a2 - z2*a3),                  #B7
+                   Atom(X,  x2*a1 + (0.5 - y2)*a2 + (0.5 + z2)*a3),  #B6
+                   Atom(X,  x3*a1 + y3*a2 + z3*a3),                  #B9
+                   Atom(X, -x3*a1 + (0.5 + y3)*a2 + (0.5 - z3)*a3),  #B12
+                   Atom(X, -x3*a1 - y3*a2 - z3*a3),                  #B11
+                   Atom(X,  x3*a1 + (0.5 - y3)*a2 + (0.5 + z3)*a3)], #B10
+                   cell=[a1,a2,a3])
+    return atoms
+
+def brookite(B='Ti', X='O', a=9.16, b=5.43, c=5.13,
+             x1=0.12,  x2=0.01, x3=0.23,
+             y1=0.11,  y2=0.15, y3=0.10,
+             z1=-0.12, z2=0.18, z3=-0.46):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c21.html
+
+    spacegroup 61 (Pbca)
+    Basis Vectors:
+Atom    Lattice Coordinates                Cartesian Coordinates
+
+1  Ti  0.12000000  0.11000000 -0.12000000     1.09920000  0.59730000 -0.61560000
+2  Ti  0.62000000  0.39000000  0.12000000     5.67920000  2.11770000  0.61560000
+3  Ti -0.12000000  0.61000000  0.62000000    -1.09920000  3.31230000  3.18060000
+4  Ti  0.38000000 -0.11000000  0.38000000     3.48080000 -0.59730000  1.94940000
+5  Ti -0.12000000 -0.11000000  0.12000000    -1.09920000 -0.59730000  0.61560000
+6  Ti  0.38000000  0.61000000 -0.12000000     3.48080000  3.31230000 -0.61560000
+7  Ti  0.12000000  0.39000000  0.38000000     1.09920000  2.11770000  1.94940000
+8  Ti  0.62000000  0.11000000  0.62000000     5.67920000  0.59730000  3.18060000
+9  O   0.01000000  0.15000000  0.18000000     0.09160000  0.81450000  0.92340000
+10 O   0.51000000  0.35000000 -0.18000000     4.67160000  1.90050000 -0.92340000
+11 O  -0.01000000  0.65000000  0.32000000    -0.09160000  3.52950000  1.64160000
+12 O   0.49000000 -0.15000000  0.68000000     4.48840000 -0.81450000  3.48840000
+13 O  -0.01000000 -0.15000000 -0.18000000    -0.09160000 -0.81450000 -0.92340000
+14 O   0.49000000  0.65000000  0.18000000     4.48840000  3.52950000  0.92340000
+15 O   0.01000000  0.35000000  0.68000000     0.09160000  1.90050000  3.48840000
+16 O   0.51000000  0.15000000  0.32000000     4.67160000  0.81450000  1.64160000
+17 O   0.23000000  0.10000000 -0.46000000     2.10680000  0.54300000 -2.35980000
+18 O   0.73000000  0.40000000  0.46000000     6.68680000  2.17200000  2.35980000
+19 O  -0.23000000  0.60000000  0.96000000    -2.10680000  3.25800000  4.92480000
+20 O   0.27000000 -0.10000000  0.04000000     2.47320000 -0.54300000  0.20520000
+21 O  -0.23000000 -0.10000000  0.46000000    -2.10680000 -0.54300000  2.35980000
+22 O   0.27000000  0.60000000 -0.46000000     2.47320000  3.25800000 -2.35980000
+23 O   0.23000000  0.40000000  0.04000000     2.10680000  2.17200000  0.20520000
+24 O   0.73000000  0.10000000  0.96000000     6.68680000  0.54300000  4.92480000
+#Extra atom location definition deleted-JN
+1 = x1*a1 + y1*a2 + z1*a3  => x1=0.12  y1=0.11  z1=-0.12
+9 = x2*a1 + y2*a2 + z2*a3  => x2=0.01  y2=0.15  z2=0.18
+17= x3*a1 + y3*a2 + z3*a3  => x3=0.23  y3=0.10  z3=-0.46
+'''
+
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = b*np.array([0.0, 1.0, 0.0])
+    a3 = c*np.array([0.0, 0.0, 1.0])
+
+    atoms = Atoms([Atom(B, x1*a1 + y1*a2 + z1*a3),
+                   Atom(B, (0.5 + x1)*a1 + (0.5 - y1)*a2 - z1*a3),
+                   Atom(B, -x1*a1 + (0.5 + y1)*a2 + (0.5 -z1)*a3),
+                   Atom(B, (0.5 - x1)*a1 -y1*a2 + (0.5 + z1)*a3),
+                   Atom(B, -x1*a1 - y1*a2 - z1*a3),
+                   Atom(B, (0.5 - x1)*a1 + (0.5 + y1)*a2 + z1*a3),
+                   Atom(B, x1*a1 + (0.5 - y1)*a2 + (0.5 + z1)*a3),
+                   Atom(B, (0.5 + x1)*a1 + y1*a2 + (0.5-z1)*a3),
+                   Atom(X, x2*a1 + y2*a2 + z2*a3),
+                   Atom(X, (0.5 + x2)*a1 + (0.5 - y2)*a2 - z2*a3),
+                   Atom(X, -x2*a1 + (0.5 + y2)*a2 + (0.5 - z2)*a3),
+                   Atom(X, (0.5 - x2)*a1 - y2*a2 + (0.5 + z2)*a3),
+                   Atom(X, -x2 * a1 - y2*a2 -z2*a3),
+                   Atom(X, (0.5 - x2)*a1 + (0.5 + y2)*a2 + z2*a3),
+                   Atom(X, x2*a1 + (0.5 - y2)*a2 + (0.5 + z2)*a3),
+                   Atom(X, (0.5 + x2)*a1 + y2*a2 + (0.5 - z2)*a3),
+                   Atom(X, x3*a1 + y3*a2 + z3*a3),
+                   Atom(X, (0.5 + x3)*a1 + (0.5 - y3)*a2 - z3*a3),
+                   Atom(X, -x3*a1 + (0.5 + y3)*a2 + (0.5 -z3)*a3),
+                   Atom(X, (0.5 - x3)*a1 - y3*a2 + (0.5 + z3)*a3),
+                   Atom(X, -x3*a1 - y3*a2 - z3*a3),
+                   Atom(X, (0.5 - x3)*a1 + (0.5 + y3)*a2 + z3*a3),
+                   Atom(X, x3*a1 + (0.5 - y3)*a2 + (0.5 + z3)*a3),
+                   Atom(X, (0.5 + x3)*a1 + y3*a2 + (0.5 - z3)*a3)],
+                   cell=[a1,a2,a3])
+
+    return atoms
+
+def columbite(B='Pb', X='O', a=4.947, b=5.951, c=5.497,
+              u=0.178, x=0.276, y=0.41, z=0.425):
+    '''
+    the parameters are derived from the output of the sg code above for PbO2.
+
+    Phys Rev B, 65, 224112
+    spacegroup 60 (Pbcn)
+
+    note: there seems to be a typo in the description for columbite in
+    Phys Rev B, 65, 224112. for two B atoms I think 0.5 should be 0.25
+    '''
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = b*np.array([0.0, 1.0, 0.0])
+    a3 = c*np.array([0.0, 0.0, 1.0])
+
+    atoms = Atoms([Atom(B,  0.0 + u*a2 + 0.25*a3),
+                   Atom(B, -0.0 - u*a2 - 0.25*a3),
+                   Atom(B,  0.5*a1 + (u + 0.5)*a2 + 0.25*a3),
+                   Atom(B, -0.5*a1 - (u + 0.5)*a2 - 0.25*a3),
+                   Atom(X,  x*a1 + y*a2 + z*a3),
+                   Atom(X, -x*a1 - y*a2 - z*a3),
+                   Atom(X,  (0.5 - x)*a1 + (0.5 -y)*a2 + (z + 0.5)*a3),
+                   Atom(X, -(0.5 - x)*a1 - (0.5 -y)*a2 - (z + 0.5)*a3),
+                   Atom(X,  (x + 0.5)*a1 + (0.5 - y)*a2 - z*a3),
+                   Atom(X, -(x + 0.5)*a1 - (0.5 - y)*a2 + z*a3),
+                   Atom(X, -x*a1 + y*a2 + (0.5-z)*a3),
+                   Atom(X,  x*a1 - y*a2 - (0.5-z)*a3)],
+                  cell = [a1, a2, a3])
+    return atoms
+                
+def cottunite(B='Pb', X='Cl', a=7.6, b=4.52, c=9.03,
+              x1=-0.746,   x2=0.15,  x3=0.05,
+              z1=0.595,    z2=-0.07, z3=0.33):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c23.html
+    #lattice vector different from PhysRevB224112,a=5.163,b=2.989,c=5.966
+    spacegroup 62 (Pnma)
+
+1  Pb -0.24600000  0.25000000 -0.09500000    -1.86960000  1.13000000 -0.85785000
+2  Pb  0.74600000  0.75000000 -0.59500000     5.66960000  3.39000000 -5.37285000
+3  Pb  0.24600000  0.75000000  0.09500000     1.86960000  3.39000000  0.85785000
+4  Pb -0.74600000  0.25000000  0.59500000    -5.66960000  1.13000000  5.37285000
+5  Cl  0.15000000  0.25000000 -0.07000000     1.14000000  1.13000000 -0.63210000
+6  Cl  0.35000000  0.75000000 -0.57000000     2.66000000  3.39000000 -5.14710000
+7  Cl -0.15000000  0.75000000  0.07000000    -1.14000000  3.39000000  0.63210000
+8  Cl -0.35000000  0.25000000  0.57000000    -2.66000000  1.13000000  5.14710000
+9  Cl  0.05000000  0.25000000  0.33000000     0.38000000  1.13000000  2.97990000
+10 Cl  0.45000000  0.75000000 -0.17000000     3.42000000  3.39000000 -1.53510000
+11 Cl -0.05000000  0.75000000 -0.33000000    -0.38000000  3.39000000 -2.97990000
+12 Cl -0.45000000  0.25000000  0.17000000    -3.42000000  1.13000000  1.53510000
+
+4 = x1*a1 + 0.25*a2 + z1*a3  => x1=-0.746  z1=0.595
+5 = x2*a1 + 0.25*a2 + z2*a3  => x2=0.15    z2=-0.07
+9 = x3*a1 + 0.25*a2 + z3*a3  => x3=0.05    z3=0.32
+    '''
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = b*np.array([0.0, 1.0, 0.0])
+    a3 = c*np.array([0.0, 0.0, 1.0])
+
+    atoms = Atoms([Atom(B,  x1*a1 + 0.25*a2 + z1*a3),
+                   Atom(B, -x1*a1 + 0.75*a2 - z1*a3),
+                   Atom(B, (0.5 - x1)*a1 + 0.75*a2 + (0.5 + z1)*a3),
+                   Atom(B, (0.5 + x1)*a1 + 0.25*a2 + (0.5 - z1)*a3),
+                   Atom(X,  x2*a1 + 0.25*a2 + z2*a3),
+                   Atom(X, -x2*a1 + 0.75*a2 - z2*a3),
+                   Atom(X, (0.5 - x2)*a1 + 0.75*a2 + (0.5 + z2)*a3),
+                   Atom(X, (0.5 + x2)*a1 + 0.25*a2 + (0.5 - z2)*a3),
+                   Atom(X,  x3*a1 + 0.25*a2 + z3*a3),
+                   Atom(X, -x3*a1 + 0.75*a2 - z3*a3),
+                   Atom(X, (0.5 - x3)*a1 + 0.75*a2 + (0.5 + z3)*a3),
+                   Atom(X, (0.5 + x3)*a1 + 0.25*a2 + (0.5 - z3)*a3)],
+                   cell=[a1,a2,a3])
+
+    return atoms
+
+def fluorite(B='Ca', X='F', a=5.463):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c1.html
+     coefficient changed to 0.25 on Atom(X)s
+    spacegroup 225 (Fm\overline{3}m)
+    '''
+    a1 = a*np.array([0.0, 0.5, 0.5])
+    a2 = a*np.array([0.5, 0.0, 0.5])
+    a3 = a*np.array([0.5, 0.5, 0.0])
+
+    atoms = Atoms([Atom(B,[0.0, 0.0, 0.0]),
+                   Atom(X,  0.25*a1 + 0.25*a2 + 0.25*a3),
+                   Atom(X, -0.25*a1 - 0.25*a2 - 0.25*a3)],
+                  cell=[a1,a2,a3])
+
+    return atoms
+
+def pyrite(B='Fe', X='S', a=5.407, u=2.0871/5.407):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c2.html
+
+    spacegroup 205 Pa\overline{3}
+    http://cst-www.nrl.navy.mil/lattice/struk.xmol/c2.pos'''
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = a*np.array([0.0, 1.0, 0.0])
+    a3 = a*np.array([0.0, 0.0, 1.0])
+
+    atoms = Atoms([Atom(B, [0.0, 0.0, 0.0]),
+                   Atom(B, 0.5*a2 + 0.5*a3),
+                   Atom(B, 0.5*a1 + 0.5*a3),
+                   Atom(B, 0.5*a1 + 0.5*a2),
+                   Atom(X,  u*a1 + u*a2 + u*a3),
+                   Atom(X, -u*a1 - u*a2 - u*a3),
+                   Atom(X,  (0.5 + u)*a1 + (0.5 - u)*a2 - u*a3),
+                   Atom(X, -(0.5 + u)*a1 - (0.5 - u)*a2 + u*a3),
+                   Atom(X, -u*a1 + (0.5 + u)*a2 + (0.5 - u)*a3),
+                   Atom(X,  u*a1 - (0.5 + u)*a2 - (0.5 - u)*a3),
+                   Atom(X,  (0.5 - u)*a1 - u*a2 + (0.5 + u)*a3),
+                   Atom(X, -(0.5 - u)*a1 + u*a2 - (0.5 + u)*a3)],
+                   cell=[a1,a2,a3])
+
+    return atoms
+  
 def set_volume(self, vol):
     '''This is short function to quickly isotropically expand/reduce the
     volume'''
