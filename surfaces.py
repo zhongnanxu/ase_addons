@@ -1149,6 +1149,254 @@ def rutile110(symbol, a, c, u, area=(2,1), base=0, layers=6, vacuum=0,
 
     return slab
 
+def anatase001(B='Ti', X='O', a=3.7842, c=2*4.7573, z=0.0831, mags=[0.5, 0], vacuum=10, area=(2, 2), fixlayers=0):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c5.html
+    spacegroup 141 (I4_1/amd)
+
+    note: this is different than the structure in ref Phys Rev B 65, 224112
+
+    Basis Vectors:
+Atom    Lattice Coordinates                Cartesian Coordinates
+
+Ti -0.12500000  0.62500000  0.25000000     0.00000000  2.83815000  1.18932500
+Ti  0.12500000  0.37500000  0.75000000     1.89210000  2.83815000  3.56797500
+O  -0.08310000  0.16690000  0.16620000     0.00000000  0.94605000  0.79066326
+O  -0.33310000  0.41690000  0.66620000     0.00000000  2.83815000  3.16931326
+O   0.08310000 -0.16690000  0.83380000     1.89210000  0.94605000  3.96663674
+O   0.33310000  0.58310000  0.33380000     1.89210000  2.83815000  1.58798674
+    '''
+    
+    m1 = mags[0]
+    m2 = mags[1]
+
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = a*np.array([0.0, 1.0, 0.0])
+    a3 = np.array([0.5*a, 0.5*a, 0.5*c])
+
+    b3 = 2*a3 - a1 - a2
+
+    atoms = Atoms([Atom(B, -0.125*a1 + 0.625*a2 + 0.25*a3, tag=1, magmom=m1),
+                   Atom(B,  0.125*a1 + 0.375*a2 + 0.75*a3, tag=2, magmom=m1),
+                   Atom(X, -z*a1 + (0.25-z)*a2 + 2*z*a3, tag=1, magmom=m2),
+                   Atom(X, -(0.25+z)*a1 + (0.5-z)*a2 + (0.5+2*z)*a3, tag=2, magmom=m2),
+                   Atom(X, z*a1 - (0.25 - z)*a2 + (1-2*z)*a3, tag=2, magmom=m2),
+                   Atom(X, (0.25 + z)*a1 + (0.5 + z)*a2 + (0.5-2*z)*a3, tag=1, magmom=m2),
+                   Atom(B, -0.125*a1 + 0.625*a2 + 0.25*a3 + a3 - a2, tag=3, magmom=m1),
+                   Atom(B,  0.125*a1 + 0.375*a2 + 0.75*a3 + a3 - a2 - a1, tag=4, magmom=m1),
+                   Atom(X, -z*a1 + (0.25-z)*a2 + 2.*z*a3 + a3, tag=3, magmom=m2),
+                   Atom(X, -(0.25+z)*a1 + (0.5-z)*a2 + (0.5+2*z)*a3 + a3 - a2, tag=4, magmom=m2),
+                   Atom(X, z*a1 - (0.25 - z)*a2 + (1-2*z)*a3 + a3 - a1, tag=4, magmom=m2),
+                   Atom(X, (0.25 + z)*a1 + (0.5 + z)*a2 + (0.5-2*z)*a3 + a3 - a2 - a1, tag=3, magmom=m2)],
+                   cell=[a1,a2,b3])
+
+    if vacuum != 0:
+        atoms.center(vacuum=vacuum, axis=2)
+        
+    if fixlayers > 0:
+        c = FixAtoms(indices=[atom.index for atom in atoms if atom.tag <= fixlayers])
+        atoms.set_constraint(c)
+
+    atoms *= (2, 2, 1)
+
+    return atoms
+
+def columbite101(B='Pb', X='O', a=4.947, b=5.951, c=5.497, mags=[0.5, 0],
+                 u=0.178, x=0.276, y=0.41, z=0.425, vacuum=10, fixlayers=0):
+    '''
+    the parameters are derived from the output of the sg code above for PbO2.
+
+    Phys Rev B, 65, 224112
+    spacegroup 60 (Pbcn)
+
+    note: there seems to be a typo in the description for columbite in
+    Phys Rev B, 65, 224112. for two B atoms I think 0.5 should be 0.25
+    '''
+
+    m1 = mags[0]
+    m2 = mags[1]
+
+    b1 = np.array([(a**2 + c**2)**0.5, 0, 0])
+    b2 = b*np.array([0.0, 1.0, 0.0])
+    b3 = np.array([(a**2 - c**2) / (a**2 + c**2)**0.5, 0, 2*a*c/(a**2 + c**2)**0.5])
+
+    atoms = Atoms([Atom(B, 7*b1/8 + b2*u + b3/8, magmom=m1, tag=1),
+                   Atom(B, 5*b1/8 + b2*(-u + 1) + 3*b3/8, magmom=m1, tag=2),
+                   Atom(B, b1/8 + b2*(u + 0.5) + 3*b3/8, magmom=m1, tag=2),
+                   Atom(B, 7*b1/8 + b2*(-u + 0.5) + 5*b3/8, magmom=m1, tag=3),
+                   Atom(X, b1*(x/2 - z/2 + 1) + b2*y + b3*(x/2 + z/2), magmom=m2, tag=2),
+                   Atom(X, b1*(-x/2 + z/2) + b2*(-y + 1) + b3*(-x/2 - z/2 + 1), magmom=m2, tag=3),
+                   Atom(X, b1*(-x/2 - z/2 + 1) + b2*(-y + 0.5) + b3*(-x/2 + z/2 + 0.5), magmom=m2, tag=3),
+                   Atom(X, b1*(x/2 + z/2) + b2*(y + 0.5) + b3*(x/2 - z/2 + 0.5), magmom=m2, tag=2),
+                   Atom(X, b1*(x/2 + z/2 - 0.25) + b2*(-y + 0.5) + b3*(x/2 - z/2 + 0.75), magmom=m2, tag=3),
+                   Atom(X, b1*(-x/2 - z/2 + 1.25) + b2*(y + 0.5) + b3*(-x/2 + z/2 + 0.25), magmom=m2, tag=2),
+                   Atom(X, b1*(-x/2 + z/2 + 0.25) + b2*y + b3*(-x/2 - z/2 + 0.75), magmom=m2, tag=2),
+                   Atom(X, b1*(x/2 - z/2 + 0.75) + b2*(-y + 1) + b3*(x/2 + z/2 + 0.25), magmom=m2, tag=3),
+                   Atom(B, 3*b1/8 + b2*u + 5*b3/8, magmom=m1, tag=3),
+                   Atom(B, b1/8 + b2*(-u + 1) + 7*b3/8, magmom=m1, tag=4),
+                   Atom(B, 5*b1/8 + b2*(u + 0.5) + 7*b3/8, magmom=m1, tag=4),
+                   Atom(B, 3*b1/8 + b2*(-u + 0.5) + b3/8, magmom=m1, tag=1),
+                   Atom(X, b1*(x/2 - z/2 + 0.5) + b2*y + b3*(x/2 + z/2 + 0.5), magmom=m2, tag=4),
+                   Atom(X, b1*(-x/2 + z/2 + 0.5) + b2*(-y + 1) + b3*(-x/2 - z/2 + 0.5), magmom=m2, tag=1),
+                   Atom(X, b1*(-x/2 - z/2 + 0.5) + b2*(-y + 0.5) + b3*(-x/2 + z/2), magmom=m2, tag=1),
+                   Atom(X, b1*(x/2 + z/2 + 0.5) + b2*(y + 0.5) + b3*(x/2 - z/2 + 1), magmom=m2, tag=4),
+                   Atom(X, b1*(x/2 + z/2 + 0.25) + b2*(-y + 0.5) + b3*(x/2 - z/2 + 0.25), magmom=m2, tag=1),
+                   Atom(X, b1*(-x/2 - z/2 + 0.75) + b2*(y + 0.5) + b3*(-x/2 + z/2 + 0.75), magmom=m2, tag=4),
+                   Atom(X, b1*(-x/2 + z/2 + 0.75) + b2*y + b3*(-x/2 - z/2 + 1.25), magmom=m2, tag=4),
+                   Atom(X, b1*(x/2 - z/2 + 0.25) + b2*(-y + 1) + b3*(x/2 + z/2 - 0.25), magmom=m2, tag=1),
+
+                   Atom(B, 7*b1/8 + b2*u + b3/8 + b3, magmom=m1, tag=5),
+                   Atom(B, 5*b1/8 + b2*(-u + 1) + 3*b3/8 + b3, magmom=m1, tag=6),
+                   Atom(B, b1/8 + b2*(u + 0.5) + 3*b3/8 + b3, magmom=m1, tag=6),
+                   Atom(B, 7*b1/8 + b2*(-u + 0.5) + 5*b3/8 + b3, magmom=m1, tag=7),
+                   Atom(X, b1*(x/2 - z/2 + 1) + b2*y + b3*(x/2 + z/2) + b3, magmom=m2, tag=6),
+                   Atom(X, b1*(-x/2 + z/2) + b2*(-y + 1) + b3*(-x/2 - z/2 + 1) + b3, magmom=m2, tag=7),
+                   Atom(X, b1*(-x/2 - z/2 + 1) + b2*(-y + 0.5) + b3*(-x/2 + z/2 + 0.5) + b3, magmom=m2, tag=7),
+                   Atom(X, b1*(x/2 + z/2) + b2*(y + 0.5) + b3*(x/2 - z/2 + 0.5) + b3, magmom=m2, tag=6),
+                   Atom(X, b1*(x/2 + z/2 - 0.25) + b2*(-y + 0.5) + b3*(x/2 - z/2 + 0.75) + b3, magmom=m2, tag=7),
+                   Atom(X, b1*(-x/2 - z/2 + 1.25) + b2*(y + 0.5) + b3*(-x/2 + z/2 + 0.25) + b3, magmom=m2, tag=6),
+                   Atom(X, b1*(-x/2 + z/2 + 0.25) + b2*y + b3*(-x/2 - z/2 + 0.75) + b3, magmom=m2, tag=6),
+                   Atom(X, b1*(x/2 - z/2 + 0.75) + b2*(-y + 1) + b3*(x/2 + z/2 + 0.25) + b3, magmom=m2, tag=7),
+                   Atom(B, 3*b1/8 + b2*u + 5*b3/8 + b3, magmom=m1, tag=7),
+                   Atom(B, b1/8 + b2*(-u + 1) + 7*b3/8 + b3, magmom=m1, tag=8),
+                   Atom(B, 5*b1/8 + b2*(u + 0.5) + 7*b3/8 + b3, magmom=m1, tag=8),
+                   Atom(B, 3*b1/8 + b2*(-u + 0.5) + b3/8 + b3, magmom=m1, tag=5),
+                   Atom(X, b1*(x/2 - z/2 + 0.5) + b2*y + b3*(x/2 + z/2 + 0.5) + b3, magmom=m2, tag=8),
+                   Atom(X, b1*(-x/2 + z/2 + 0.5) + b2*(-y + 1) + b3*(-x/2 - z/2 + 0.5) + b3, magmom=m2, tag=5),
+                   Atom(X, b1*(-x/2 - z/2 + 0.5) + b2*(-y + 0.5) + b3*(-x/2 + z/2) + b3, magmom=m2, tag=5),
+                   Atom(X, b1*(x/2 + z/2 + 0.5) + b2*(y + 0.5) + b3*(x/2 - z/2 + 1) + b3, magmom=m2, tag=8),
+                   Atom(X, b1*(x/2 + z/2 + 0.25) + b2*(-y + 0.5) + b3*(x/2 - z/2 + 0.25) + b3, magmom=m2, tag=5),
+                   Atom(X, b1*(-x/2 - z/2 + 0.75) + b2*(y + 0.5) + b3*(-x/2 + z/2 + 0.75) + b3, magmom=m2, tag=8),
+                   Atom(X, b1*(-x/2 + z/2 + 0.75) + b2*y + b3*(-x/2 - z/2 + 1.25) + b3, magmom=m2, tag=8),
+                   Atom(X, b1*(x/2 - z/2 + 0.25) + b2*(-y + 1) + b3*(x/2 + z/2 - 0.25) + b3, magmom=m2, tag=5)],
+                  cell = [b1, b2, b3])
+
+    if vacuum != 0:
+        atoms.center(vacuum=vacuum, axis=2)
+        
+    if fixlayers > 0:
+        c = FixAtoms(indices=[atom.index for atom in atoms if atom.tag <= fixlayers])
+        atoms.set_constraint(c)
+
+
+    return atoms
+
+def pyrite001(B='Ir', X='O', a=5.407, u=2.0871/5.407, magmoms=[0.5, 0], vacuum=10, fixlayers=0):
+    '''http://cst-www.nrl.navy.mil/lattice/struk/c2.html
+
+    spacegroup 205 Pa\overline{3}
+    http://cst-www.nrl.navy.mil/lattice/struk.xmol/c2.pos'''
+
+    m1, m2 = magmoms
+
+    a1 = a*np.array([1.0, 0.0, 0.0])
+    a2 = a*np.array([0.0, 1.0, 0.0])
+    a3 = a*np.array([0.0, 0.0, 1.0])
+
+    atoms = Atoms([Atom(B, 0.25*a3, magmom=m1, tag=1),
+                   Atom(B, 0.5*a2 + 0.75*a3, magmom=m1, tag=2),
+                   Atom(B, 0.5*a1 + 0.75*a3, magmom=m1, tag=2),
+                   Atom(B, 0.5*a1 + 0.5*a2 + 0.25*a3, magmom=m1, tag=1),
+                   Atom(X, u*a1 + u*a2 + (u + 0.25)*a3, magmom=m2, tag=2),
+                   Atom(X, (1 - u)*a1 + (1 - u)*a2 + (1.25 - u)*a3, magmom=m2, tag=2),
+                   Atom(X, (0.5 + u)*a1 + (0.5 - u)*a2 + (1.25 - u)*a3, magmom=m2, tag=2),
+                   Atom(X, (0.5 - u)*a1 + (u - 0.5)*a2 + (u + 0.25)*a3, magmom=m2, tag=2),
+                   Atom(X, (1 - u)*a1 + (0.5 + u)*a2 + (0.75 - u)*a3, magmom=m2, tag=1),
+                   Atom(X, u*a1 + (0.5 - u)*a2 + (u - 0.25)*a3, magmom=m2, tag=1),
+                   Atom(X, (0.5 - u)*a1 + (1 - u)*a2 + (u - 0.25)*a3, magmom=m2, tag=1),
+                   Atom(X, (u + 0.5)*a1 + u*a2 + (0.75 - u)*a3, magmom=m2, tag=1),
+                   Atom(B, 0.25*a3 + a3, magmom=m1, tag=3),
+                   Atom(B, 0.5*a2 + 0.75*a3 + a3, magmom=m1, tag=4),
+                   Atom(B, 0.5*a1 + 0.75*a3 + a3, magmom=m1, tag=4),
+                   Atom(B, 0.5*a1 + 0.5*a2 + 0.25*a3 + a3, magmom=m1, tag=3),
+                   Atom(X, u*a1 + u*a2 + (u + 0.25)*a3 + a3, magmom=m2, tag=4),
+                   Atom(X, (1 - u)*a1 + (1 - u)*a2 + (1.25 - u)*a3 + a3, magmom=m2, tag=4),
+                   Atom(X, (0.5 + u)*a1 + (0.5 - u)*a2 + (1.25 - u)*a3 + a3, magmom=m2, tag=4),
+                   Atom(X, (0.5 - u)*a1 + (u - 0.5)*a2 + (u + 0.25)*a3 + a3, magmom=m2, tag=4),
+                   Atom(X, (1 - u)*a1 + (0.5 + u)*a2 + (0.75 - u)*a3 + a3, magmom=m2, tag=3),
+                   Atom(X, u*a1 + (0.5 - u)*a2 + (u - 0.25)*a3 + a3, magmom=m2, tag=3),
+                   Atom(X, (0.5 - u)*a1 + (1 - u)*a2 + (u - 0.25)*a3 + a3, magmom=m2, tag=3),
+                   Atom(X, (u + 0.5)*a1 + u*a2 + (0.75 - u)*a3 + a3, magmom=m2, tag=3)],
+                   cell=[a1,a2,2*a3])
+
+    if fixlayers > 0:
+        c = FixAtoms(indices=[atom.index for atom in atoms if atom.tag <= fixlayers])
+        atoms.set_constraint(c)
+
+    if vacuum != 0:
+        atoms.center(vacuum=vacuum, axis=2)
+
+    return atoms
+
+def brookite110(B='Ti', X='O', a=9.16, b=5.43, c=5.13,
+                x1=0.12,  x2=0.01, x3=0.23,
+                y1=0.11,  y2=0.15, y3=0.10,
+                z1=-0.12, z2=0.18, z3=-0.46, magmoms=[0.5, 0], vacuum=10, fixlayers=0):
+
+    m1, m2 = magmoms
+
+    h1 = np.array([0.0, (a**2 + b**2)**0.5, 0.0])
+    h2 = np.array([0, (a**2 - b**2) / (a**2 + b**2)**0.5, 2*a*b/(a**2 + b**2)**0.5])
+    h3 = c * np.array([1.0, 0.0, 0.0])
+
+    atoms = Atoms([Atom(B, h1*(x1/2 - y1/2) + h2*(x1/2 + y1/2) + h3*(z1 + 1), magmom=m1, tag=1),                    # 0
+                   Atom(B, h1*(x1/2 + y1/2) + h2*(x1/2 - y1/2 + 0.5) - h3*z1, magmom=m1, tag=2),                    # 1
+                   Atom(B, h1*(-x1/2 - y1/2 + 0.75) + h2*(-x1/2 + y1/2 + 0.25) + h3*(-z1 + 0.5), magmom=m1, tag=2), # 2
+                   Atom(B, h1*(-x1/2 + y1/2 + 0.25) + h2*(-x1/2 - y1/2 + 0.25) + h3*(z1 + 0.5), magmom=m1, tag=1),  # 3
+                   Atom(B, h1*(-x1/2 + y1/2 + 1) + h2*(-x1/2 - y1/2 + 1) - h3*z1, magmom=m1, tag=4),                # 4
+                   Atom(B, h1*(-x1/2 - y1/2 + 1) + h2*(-x1/2 + y1/2 + 0.5) + h3*(z1 + 1), magmom=m1, tag=3),        # 5
+                   Atom(B, h1*(x1/2 + y1/2 + 0.75) + h2*(x1/2 - y1/2 + 0.25) + h3*(z1 + 0.5), magmom=m1, tag=2),    # 6
+                   Atom(B, h1*(x1/2 - y1/2 + 0.25) + h2*(x1/2 + y1/2 + 0.25) + h3*(-z1 + 0.5), magmom=m1, tag=2),   # 7
+                   Atom(X, h1*(x2/2 - y2/2 + 1) + h2*(x2/2 + y2/2) + h3*z2, magmom=m2, tag=1),                      # 8
+                   Atom(X, h1*(x2/2 + y2/2) + h2*(x2/2 - y2/2 + 0.5) + h3*(-z2 + 1), magmom=m2, tag=2),             # 9 
+                   Atom(X, h1*(-x2/2 - y2/2 + 0.75) + h2*(-x2/2 + y2/2 + 0.25) + h3*(-z2 + 0.5), magmom=m2, tag=2), # 10
+                   Atom(X, h1*(-x2/2 + y2/2 + 0.25) + h2*(-x2/2 - y2/2 + 0.25) + h3*(z2 + 0.5), magmom=m2, tag=1),  # 11
+                   Atom(X, h1*(-x2/2 + y2/2) + h2*(-x2/2 - y2/2 + 1) + h3*(-z2 + 1), magmom=m2, tag=4),             # 12
+                   Atom(X, h1*(-x2/2 - y2/2 + 1) + h2*(-x2/2 + y2/2 + 0.5) + h3*z2, magmom=m2, tag=3),              # 13
+                   Atom(X, h1*(x2/2 + y2/2 + 0.75) + h2*(x2/2 - y2/2 + 0.25) + h3*(z2 + 0.5), magmom=m2, tag=2),    # 14
+                   Atom(X, h1*(x2/2 - y2/2 + 0.25) + h2*(x2/2 + y2/2 + 0.25) + h3*(-z2 + 0.5), magmom=m2, tag=2),   # 15
+                   Atom(X, h1*(x3/2 - y3/2) + h2*(x3/2 + y3/2) + h3*(z3 + 1), magmom=m2, tag=1),                    # 16
+                   Atom(X, h1*(x3/2 + y3/2) + h2*(x3/2 - y3/2 + 0.5) - h3*z3, magmom=m2, tag=3),                    # 17
+                   Atom(X, h1*(-x3/2 - y3/2 + 0.75) + h2*(-x3/2 + y3/2 + 0.25) + h3*(-z3 + 0.5), magmom=m2, tag=2), # 18
+                   Atom(X, h1*(-x3/2 + y3/2 + 0.25) + h2*(-x3/2 - y3/2 + 0.25) + h3*(z3 + 0.5), magmom=m2, tag=1),  # 19
+                   Atom(X, h1*(-x3/2 + y3/2 + 1) + h2*(-x3/2 - y3/2 + 1) - h3*z3, magmom=m2, tag=4),                # 20
+                   Atom(X, h1*(-x3/2 - y3/2 + 1) + h2*(-x3/2 + y3/2 + 0.5) + h3*(z3 + 1), magmom=m2, tag=2),        # 21
+                   Atom(X, h1*(x3/2 + y3/2 + 0.75) + h2*(x3/2 - y3/2 + 0.25) + h3*(z3 + 0.5), magmom=m2, tag=2),    # 22
+                   Atom(X, h1*(x3/2 - y3/2 + 0.25) + h2*(x3/2 + y3/2 + 0.25) + h3*(-z3 + 0.5), magmom=m2, tag=2),   # 23
+                   Atom(B, h1*(x1/2 - y1/2 + 0.5) + h2*(x1/2 + y1/2 + 0.5) + h3*(z1 + 1), magmom=m1, tag=3),        # 24
+                   Atom(B, h1*(x1/2 + y1/2 + 0.5) + h2*(x1/2 - y1/2) - h3*z1, magmom=m1, tag=1),                    # 25
+                   Atom(B, h1*(-x1/2 - y1/2 + 0.25) + h2*(-x1/2 + y1/2 + 0.75) + h3*(-z1 + 0.5), magmom=m1, tag=3), # 26
+                   Atom(B, h1*(-x1/2 + y1/2 + 0.75) + h2*(-x1/2 - y1/2 + 0.75) + h3*(z1 + 0.5), magmom=m1, tag=3),  # 27
+                   Atom(B, h1*(-x1/2 + y1/2 + 0.5) + h2*(-x1/2 - y1/2 + 0.5) - h3*z1, magmom=m1, tag=2),            # 28
+                   Atom(B, h1*(-x1/2 - y1/2 + 0.5) + h2*(-x1/2 + y1/2 + 1) + h3*(z1 + 1), magmom=m1, tag=4),        # 29
+                   Atom(B, h1*(x1/2 + y1/2 + 0.25) + h2*(x1/2 - y1/2 + 0.75) + h3*(z1 + 0.5), magmom=m1, tag=3),    # 30
+                   Atom(B, h1*(x1/2 - y1/2 + 0.75) + h2*(x1/2 + y1/2 + 0.75) + h3*(-z1 + 0.5), magmom=m1, tag=4),   # 31
+                   Atom(X, h1*(x2/2 - y2/2 + 0.5) + h2*(x2/2 + y2/2 + 0.5) + h3*z2, magmom=m2, tag=3),              # 32
+                   Atom(X, h1*(x2/2 + y2/2 + 0.5) + h2*(x2/2 - y2/2 + 1) + h3*(-z2 + 1), magmom=m2, tag=4),         # 33
+                   Atom(X, h1*(-x2/2 - y2/2 + 0.25) + h2*(-x2/2 + y2/2 + 0.75) + h3*(-z2 + 0.5), magmom=m2, tag=3), # 34
+                   Atom(X, h1*(-x2/2 + y2/2 + 0.75) + h2*(-x2/2 - y2/2 + 0.75) + h3*(z2 + 0.5), magmom=m2, tag=3),  # 35
+                   Atom(X, h1*(-x2/2 + y2/2 + 0.5) + h2*(-x2/2 - y2/2 + 0.5) + h3*(-z2 + 1), magmom=m2, tag=2),     # 36
+                   Atom(X, h1*(-x2/2 - y2/2 + 0.5) + h2*(-x2/2 + y2/2) + h3*z2, magmom=m2, tag=1),                  # 37
+                   Atom(X, h1*(x2/2 + y2/2 + 0.25) + h2*(x2/2 - y2/2 + 0.75) + h3*(z2 + 0.5), magmom=m2, tag=3),    # 38
+                   Atom(X, h1*(x2/2 - y2/2 + 0.75) + h2*(x2/2 + y2/2 + 0.75) + h3*(-z2 + 0.5), magmom=m2, tag=4),   # 39
+                   Atom(X, h1*(x3/2 - y3/2 + 0.5) + h2*(x3/2 + y3/2 + 0.5) + h3*(z3 + 1), magmom=m2, tag=3),        # 40
+                   Atom(X, h1*(x3/2 + y3/2 + 0.5) + h2*(x3/2 - y3/2) - h3*z3, magmom=m2, tag=1),                    # 41
+                   Atom(X, h1*(-x3/2 - y3/2 + 0.25) + h2*(-x3/2 + y3/2 + 0.75) + h3*(-z3 + 0.5), magmom=m2, tag=3), # 42
+                   Atom(X, h1*(-x3/2 + y3/2 + 0.75) + h2*(-x3/2 - y3/2 + 0.75) + h3*(z3 + 0.5), magmom=m2, tag=3),  # 43
+                   Atom(X, h1*(-x3/2 + y3/2 + 0.5) + h2*(-x3/2 - y3/2 + 0.5) - h3*z3, magmom=m2, tag=2),            # 44
+                   Atom(X, h1*(-x3/2 - y3/2 + 0.5) + h2*(-x3/2 + y3/2 + 1) + h3*(z3 + 1), magmom=m2, tag=4),        # 45
+                   Atom(X, h1*(x3/2 + y3/2 + 0.25) + h2*(x3/2 - y3/2 + 0.75) + h3*(z3 + 0.5), magmom=m2, tag=3),    # 46
+                   Atom(X, h1*(x3/2 - y3/2 + 0.75) + h2*(x3/2 + y3/2 + 0.75) + h3*(-z3 + 0.5), magmom=m2, tag=4)],  # 47
+                  cell=[h3,h1,h2])
+
+    if vacuum != 0:
+        atoms.center(vacuum=vacuum, axis=2)
+
+    if fixlayers > 0:
+        c = FixAtoms(indices=[atom.index for atom in atoms if atom.tag <= fixlayers])
+        atoms.set_constraint(c)
+
+    return atoms
+
 
 def add_adsorbate(slab_original, adsorbate, height, position=None, mol_index=None,
                   top=True, fix_relax=False):
@@ -1241,8 +1489,6 @@ def rotate_111(atoms):
     atoms.set_scaled_positions(scaled_pos)
     
     return atoms
-
-def anatase001
 
 def condense(atoms):
     # First, create a set of the magmoms
