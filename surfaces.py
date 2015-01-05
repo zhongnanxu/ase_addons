@@ -1268,7 +1268,7 @@ def columbite101(B='Pb', X='O', a=4.947, b=5.951, c=5.497, mags=[0.5, 0],
                    Atom(X, b1*(-x/2 - z/2 + 0.75) + b2*(y + 0.5) + b3*(-x/2 + z/2 + 0.75) + b3, magmom=m2, tag=8),
                    Atom(X, b1*(-x/2 + z/2 + 0.75) + b2*y + b3*(-x/2 - z/2 + 1.25) + b3, magmom=m2, tag=8),
                    Atom(X, b1*(x/2 - z/2 + 0.25) + b2*(-y + 1) + b3*(x/2 + z/2 - 0.25) + b3, magmom=m2, tag=5)],
-                  cell = [b1, b2, b3])
+                  cell = [b1, b2, 2*b3])
 
     if vacuum != 0:
         atoms.center(vacuum=vacuum, axis=2)
@@ -1280,13 +1280,13 @@ def columbite101(B='Pb', X='O', a=4.947, b=5.951, c=5.497, mags=[0.5, 0],
 
     return atoms
 
-def pyrite001(B='Ir', X='O', a=5.407, u=2.0871/5.407, magmoms=[0.5, 0], vacuum=10, fixlayers=0):
+def pyrite001(B='Ir', X='O', a=5.407, u=2.0871/5.407, mags=[0.5, 0], vacuum=10, fixlayers=0):
     '''http://cst-www.nrl.navy.mil/lattice/struk/c2.html
 
     spacegroup 205 Pa\overline{3}
     http://cst-www.nrl.navy.mil/lattice/struk.xmol/c2.pos'''
 
-    m1, m2 = magmoms
+    m1, m2 = mags
 
     a1 = a*np.array([1.0, 0.0, 0.0])
     a2 = a*np.array([0.0, 1.0, 0.0])
@@ -1330,9 +1330,9 @@ def pyrite001(B='Ir', X='O', a=5.407, u=2.0871/5.407, magmoms=[0.5, 0], vacuum=1
 def brookite110(B='Ti', X='O', a=9.16, b=5.43, c=5.13,
                 x1=0.12,  x2=0.01, x3=0.23,
                 y1=0.11,  y2=0.15, y3=0.10,
-                z1=-0.12, z2=0.18, z3=-0.46, magmoms=[0.5, 0], vacuum=10, fixlayers=0):
+                z1=-0.12, z2=0.18, z3=-0.46, mags=[0.5, 0], vacuum=10, fixlayers=0):
 
-    m1, m2 = magmoms
+    m1, m2 = mags
 
     h1 = np.array([0.0, (a**2 + b**2)**0.5, 0.0])
     h2 = np.array([0, (a**2 - b**2) / (a**2 + b**2)**0.5, 2*a*b/(a**2 + b**2)**0.5])
