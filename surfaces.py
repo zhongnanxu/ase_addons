@@ -822,6 +822,126 @@ def inverse_spinel111(symbol, a, x, area=(1,1), layers=18, vacuum=0,
        slab.set_constraint(c)
    return slab
 
+def corundum10_12(symbols, chex=None, c_over_a=2.766, z=0.144, x=0.309, mags=(2, 2),
+                  vol=None, vacuum=0, fixlayers=2):
+    '''Returns a corundum atoms object
+    
+    Parameters
+    ----------
+    symbol: tuple
+        The atoms in the unit cell.
+    chex: flt
+        This is the hexagonal height. 
+    c_over_a: flt
+        This is the hexagonal height to hexagonal base length ratio
+    z: flt
+        This is the cation position parameter
+    x: flt
+        This is the anion positoin parameter
+    mags: tuple
+        This is the magnetic moments of the cation and anion, respectively
+    vol: flt
+        The volume of the primitive cell
+    NOTE: One must provide either the volume or the lattice 
+    constant.
+    '''
+    up = mags[0]
+    down = -mags[0]
+    if chex == None and vol == None:
+        raise TypeError('Please provide either a lattice or volume')
+    elif chex != None and vol != None:
+        raise TypeError('Cannot provide both lattice constant and volume')
+    elif vol != None:
+        chex = ((6 * vol * (c_over_a) ** 2) / 3 ** 0.5) ** (1/3)
+    ahex = chex / c_over_a
+    x = 0.25 - x
+    a = chex/(3.0*(3.0) ** (0.5)) + ahex/(3.0 * (2.0) ** (0.5))
+    b = ahex*(1.0/(3.0*(2.0) ** 0.5) - 1.0/(2.0) ** 0.5) + chex/(3.0*(3.0) ** 0.5)
+    a1 = np.array([b,a,a])
+    a2 = np.array([a,b,a])
+    a3 = np.array([a,a,b])
+    b1 = -a3 + a2
+    b2 = -a1 + a2 + a3
+    b3 = a1
+    Rx = np.array([[1, 0, 0],
+                   [0, 1.0/2.0**0.5, -1.0/2.0**0.5],
+                   [0, 1.0/2.0**0.5, 1.0/2.0**0.5]])
+    b1 = np.dot(Rx, b1)
+    b2 = np.dot(Rx, b2)
+    b3 = np.dot(Rx, b3)    
+
+    hyp = (2*b**2 + (2*a - b)**2)**0.5
+
+    Ry = np.array([[(2*a - b)/hyp, 0, b*2**0.5/hyp],
+                   [0            , 1, 0            ],
+                   [-b*2**0.5/hyp , 0, (2*a - b)/hyp]])
+
+    b1 = np.dot(Ry, b1)
+    b2 = np.dot(Ry, b2)
+    b3 = np.dot(Ry, b3)    
+
+    Rz = np.array([[0, -1, 0],
+                   [1,  0, 0],
+                   [0,  0, 1]])
+
+    b1 = np.dot(Rz, b1)
+    b2 = np.dot(Rz, b2)
+    b3 = np.dot(Rz, b3)
+        
+    bulk = Atoms([Atom(symbols[1], b1*(-x + 3.0/4.0) + b2/4.0, tag=1),                                                # 0
+                  Atom(symbols[1], b1*(x/2.0 + 3.0/8.0) + b2*(x/2.0 + 1.0/8.0) + b3*(-x/2.0 + 1.0/8.0), tag=1),       # 1
+                  Atom(symbols[1], b1*(-x/2.0 + 5.0/8.0) + b2*(x/2.0 + 5.0/8.0) + b3*(-x/2.0 + 1.0/8.0), tag=1),      # 2
+                  Atom(symbols[0], b1/2.0 + b2*(-z + 1.0/2.0) + b3*(-2*z + 1.0/2.0), magmom=up, tag=1),                          # 3 
+                  Atom(symbols[0], 1.0/2.0*b1 + b2*(-z + 1.0) + b3*(-2*z + 1.0/2.0), magmom=down, tag=1),                          # 4 
+                  Atom(symbols[0], b2*z + 2*b3*z, magmom=up, tag=1),                                                             # 5
+                  Atom(symbols[0], b2*(z + 1.0/2.0) + 2*b3*z, magmom=down, tag=1),                                                 # 6
+                  Atom(symbols[1], b1*(-x/2.0 + 1.0/8.0) + b2*(-x/2.0 + 3.0/8.0) + b3*(x/2.0 + 3.0/8.0), tag=1),      # 7
+                  Atom(symbols[1], b1*(x/2 + 7.0/8.0) + b2*(-x/2.0 + 7.0/8.0) + b3*(x/2.0 + 3.0/8.0), tag=1),         # 8
+                  Atom(symbols[1], b1*(-x + 1.0/4.0) + 3.0*b2/4.0 + b3/2.0, tag=1),                                   # 9
+                  
+                  Atom(symbols[1], b1*(x + 3.0/4.0) + b2/4.0 + b3/2.0, tag=2),                                        # 10
+                  Atom(symbols[0], b2*(-z + 1.0/2.0) + b3*(-2*z + 1.0), magmom=down, tag=2),                                       # 11
+                  Atom(symbols[1], b1*(x/2.0 + 7.0/8.0) + b2*(x/2.0 + 5.0/8.0) + b3*(-x/2.0 + 5.0/8.0), tag=2),       # 12
+                  Atom(symbols[1], b1*(-x/2.0 + 1.0/8.0) + b2*(x/2.0 + 1.0/8.0) + b3*(-x/2.0 + 5.0/8.0), tag=2),      # 13
+                  Atom(symbols[0], b2*(-z + 1) + b3*(-2*z + 1), magmom=up, tag=2),                                               # 14
+                  Atom(symbols[0], b1/2.0 + b2*(z + 1.0/2.0) + b3*(2*z + 1.0/2.0), magmom=up, tag=2),                            # 15
+                  Atom(symbols[0], 1.0/2.0*b1 + b2*z + b3*(2*z + 1.0/2.0), magmom=down, tag=2),                                    # 16
+                  Atom(symbols[1], b1*(-x/2.0 + 5.0/8.0) + b2*(-x/2.0 + 7.0/8.0) + b3*(x/2.0 + 7.0/8.0), tag=2),      # 17
+                  Atom(symbols[1], b1*(x/2.0 + 3.0/8.0) + b2*(-x/2.0 + 3.0/8.0) + b3*(x/2.0 + 7.0/8.0), tag=2),       # 18
+                  Atom(symbols[1], b1*(x + 1.0/4.0) + 3.0*b2/4.0 + b3, tag=2),                                        # 19
+
+                  Atom(symbols[1], b1*(-x + 3.0/4.0) + b2/4.0 + b3, tag=3),                                           # 20
+                  Atom(symbols[1], b1*(x/2.0 + 3.0/8.0) + b2*(x/2.0 + 1.0/8.0) + b3*(-x/2.0 + 1.0/8.0) + b3, tag=3),  # 21
+                  Atom(symbols[1], b1*(-x/2.0 + 5.0/8.0) + b2*(x/2.0 + 5.0/8.0) + b3*(-x/2.0 + 1.0/8.0) + b3, tag=3), # 22
+                  Atom(symbols[0], b1/2.0 + b2*(-z + 1.0/2.0) + b3*(-2*z + 1.0/2.0) + b3, magmom=up, tag=3),                     # 23
+                  Atom(symbols[0], 1.0/2.0*b1 + b2*(-z + 1.0) + b3*(-2*z + 1.0/2.0) + b3, magmom=down, tag=3),                     # 24
+                  Atom(symbols[0], b2*z + 2*b3*z + b3, magmom=up, tag=3),                                                        # 25
+                  Atom(symbols[0], b2*(z + 1.0/2.0) + 2*b3*z + b3, magmom=down, tag=3),                                            # 26
+                  Atom(symbols[1], b1*(-x/2.0 + 1.0/8.0) + b2*(-x/2.0 + 3.0/8.0) + b3*(x/2.0 + 3.0/8.0) + b3, tag=3), # 27
+                  Atom(symbols[1], b1*(x/2 + 7.0/8.0) + b2*(-x/2.0 + 7.0/8.0) + b3*(x/2.0 + 3.0/8.0) + b3, tag=3),    # 28
+                  Atom(symbols[1], b1*(-x + 1.0/4.0) + 3.0*b2/4.0 + b3/2.0 + b3, tag=3),                              # 29
+                  
+                  Atom(symbols[1], b1*(x + 3.0/4.0) + b2/4.0 + b3/2.0 + b3, tag=4),                                   # 30
+                  Atom(symbols[0], b2*(-z + 1.0/2.0) + b3*(-2*z + 1.0) + b3, magmom=down, tag=4),                                  # 31
+                  Atom(symbols[1], b1*(x/2.0 + 7.0/8.0) + b2*(x/2.0 + 5.0/8.0) + b3*(-x/2.0 + 5.0/8.0) + b3, tag=4),  # 32
+                  Atom(symbols[1], b1*(-x/2.0 + 1.0/8.0) + b2*(x/2.0 + 1.0/8.0) + b3*(-x/2.0 + 5.0/8.0) + b3, tag=4), # 33
+                  Atom(symbols[0], b2*(-z + 1) + b3*(-2*z + 1) + b3, magmom=up, tag=4),                                          # 34
+                  Atom(symbols[0], b1/2.0 + b2*(z + 1.0/2.0) + b3*(2*z + 1.0/2.0) + b3, magmom=up, tag=4),                       # 35
+                  Atom(symbols[0], 1.0/2.0*b1 + b2*z + b3*(2*z + 1.0/2.0) + b3, magmom=down, tag=4),                               # 36
+                  Atom(symbols[1], b1*(-x/2.0 + 5.0/8.0) + b2*(-x/2.0 + 7.0/8.0) + b3*(x/2.0 + 7.0/8.0) + b3, tag=4), # 37
+                  Atom(symbols[1], b1*(x/2.0 + 3.0/8.0) + b2*(-x/2.0 + 3.0/8.0) + b3*(x/2.0 + 7.0/8.0) + b3, tag=4),  # 38
+                  Atom(symbols[1], b1*(x + 1.0/4.0) + 3.0*b2/4.0 + b3 + b3, tag=4),                                   # 39
+              ],
+                 cell=(b1, b2, 2*b3))
+
+    c = FixAtoms(indices=[atom.index for atom in bulk if atom.tag <= fixlayers])
+    bulk.set_constraint(c)
+
+    if vacuum != 0:
+        slab.center(vacuum=vacuum, axis=2)
+    
+    return bulk
+
 def corundum0001(symbol=('Fe', 'O'), chex=13, ahex=5, z=0.144, x=0.31, area=(1,1), layers=18, vacuum=0,
                  mag=5, fixlayers=0, symmetry=False):
     """Returns an atoms object with the corundum(0001) surface
@@ -1395,6 +1515,97 @@ def brookite110(B='Ti', X='O', a=9.16, b=5.43, c=5.13,
         c = FixAtoms(indices=[atom.index for atom in atoms if atom.tag <= fixlayers])
         atoms.set_constraint(c)
 
+    return atoms
+
+
+def CuO111(symbol=['Cu', 'O'], cell=[[4.20, 0, 0], [0, 4.10, 0], [-0.220, 0, 5.15]],
+           y=0.986481, mags=[0.5, 0], vacuum=10, fixlayers=2):
+    """The CuO (111) surface. The cell variable is an array of the relaxed bulk cell"""
+
+    up = mags[0]
+    down = -mags[0]
+    
+    a1, a2, a3 = cell
+
+    a1 = np.array(a1)
+    a2 = np.array(a2)
+    a3 = np.array(a3)
+
+    a = a1 - a2
+    b = a1 - a3
+    c = a1 + a2 + a3
+
+    # Given two rotation angles theta (t) and beta (b), we need to save some quantities
+    a1 = abs(a[0])
+    a2 = abs(a[1])
+    a3 = abs(a[2])
+    theta_hyp = (a1**2 + a2**2)**0.5
+    cos_theta = a1 / theta_hyp
+    sin_theta = a2 / theta_hyp
+
+    b1 = abs(b[0])
+    b2 = abs(b[1])
+    b3 = abs(b[2])
+    beta_hyp = ((b1*a2 / theta_hyp)**2 + b3**2)**0.5
+    sin_beta = b3 / beta_hyp
+    cos_beta = (b1*a2 / theta_hyp) / beta_hyp
+
+    R_z = np.array([[cos_theta, -sin_theta, 0],
+                    [sin_theta,  cos_theta, 0],
+                    [0        ,  0        , 1]])
+
+    R_x = np.array([[1, 0       ,  0       ],
+                    [0, cos_beta, -sin_beta],
+                    [0, sin_beta,  cos_beta]])
+
+    b1 = np.dot(R_x, np.dot(R_z, a))
+    b2 = np.dot(R_x, np.dot(R_z, b))
+    b3 = np.dot(R_x, np.dot(R_z, c))
+
+    y = 0.986481
+
+    atoms = Atoms([Atom('Cu', b1/4 + b2/2 + b3/6, tag=1, magmom=down), # 1
+                   Atom('O', b1*(2*y/3 - 1.0/4) + b2*(-y/3 + 1.0/2) + b3*(-y/3 + 5.0/12), tag=1), # 1
+                   Atom('Cu', 3*b1/4 + b3/6, tag=1, magmom=up), # 1
+                   Atom('Cu', b1/4 + b3/6, tag=1, magmom=up), # 1
+                   Atom('Cu', 3*b1/4 + b2/2 + b3/6, tag=1, magmom=down), # 1
+                   Atom('O', b1*(-2*y/3 + 3.0/4) + b2*(y/3 + 1.0/2) + b3*(y/3 - 1.0/12), tag=1), # 1
+                   Atom('O', b1*(2*y/3 + 1.0/4) + b2*(-y/3 + 1.0/2) + b3*(-y/3 + 5.0/12), tag=1), # 1
+                   Atom('O', b1*(-2*y/3 + 5.0/4) + b2*(y/3 + 1.0/2) + b3*(y/3 - 1.0/12), tag=1), # 1
+                   Atom('Cu', b1/12 + b2/3 + b3/2, tag=2, magmom=up), # 2
+                   Atom('Cu', 7*b1/12 + b2/3 + b3/2, tag=2, magmom=up), # 2
+                   Atom('Cu', b1/12 + 5*b2/6 + b3/2, tag=2, magmom=down), # 2
+                   Atom('O', b1*(-2*y/3 + 13.0/12) + b2*(y/3 - 1.0/6) + b3*(y/3 + 3.0/12), tag=2), # 2
+                   Atom('O', b1*(2*y/3 - 5.0/12) + b2*(-y/3 + 5.0/6) + b3*(-y/3 + 9.0/12), tag=2), # 2
+                   Atom('O', b1*(-2*y/3 + 19.0/12) + b2*(y/3 - 1.0/6) + b3*(y/3 + 3.0/12), tag=2), # 2
+                   Atom('Cu', 7*b1/12 + 5*b2/6 + b3/2, tag=2, magmom=down), # 2
+                   Atom('O', b1*(2*y/3 + 1.0/12) + b2*(-y/3 + 5.0/6) + b3*(-y/3 + 9.0/12), tag=2), # 2
+                   Atom('O', b1*(2*y/3 - 7.0/12) + b2*(-y/3 + 7.0/6) + b3*(-y/3 + 13.0/12), tag=3), # 3
+                   Atom('Cu', 5*b1/12 + 2*b2/3 + 5*b3/6, tag=3, magmom=down), # 3
+                   Atom('Cu', 11*b1/12 + b2/6 + 5*b3/6, tag=3, magmom=up), # 3
+                   Atom('Cu', 11*b1/12 + 2*b2/3 + 5*b3/6, tag=3, magmom=down), # 3
+                   Atom('Cu', 5*b1/12 + b2/6 + 5*b3/6, tag=3, magmom=up), # 3
+                   Atom('O', b1*(-2*y/3 + 17.0/12) + b2*(y/3 + 1.0/6) + b3*(y/3 + 7.0/12), tag=3), # 3
+                   Atom('O', b1*(2*y/3 - 1.0/12) + b2*(-y/3 + 7.0/6) + b3*(-y/3 + 13.0/12), tag=3), # 3
+                   Atom('O', b1*(-2*y/3 + 11.0/12) + b2*(y/3 + 1.0/6) + b3*(y/3 + 7.0/12), tag=3), # 3
+                   Atom('Cu', b1/4 + b2/2 + b3/6 + b3, tag=4, magmom=down), # 4
+                   Atom('O', b1*(2*y/3 - 1.0/4) + b2*(-y/3 + 1.0/2) + b3*(-y/3 + 5.0/12) + b3, tag=4), # 4
+                   Atom('Cu', 3*b1/4 + b3/6 + b3, tag=4, magmom=up), # 4
+                   Atom('Cu', b1/4 + b3/6 + b3, tag=4, magmom=up), # 4
+                   Atom('Cu', 3*b1/4 + b2/2 + b3/6 + b3, tag=4, magmom=down), # 4
+                   Atom('O', b1*(-2*y/3 + 3.0/4) + b2*(y/3 + 1.0/2) + b3*(y/3 - 1.0/12) + b3, tag=4), # 4
+                   Atom('O', b1*(2*y/3 + 1.0/4) + b2*(-y/3 + 1.0/2) + b3*(-y/3 + 5.0/12) + b3, tag=4), # 4
+                   Atom('O', b1*(-2*y/3 + 5.0/4) + b2*(y/3 + 1.0/2) + b3*(y/3 - 1.0/12) + b3, tag=4)], # 4
+                  cell=(b1, b2, b3))
+
+    if fixlayers > 0:
+        c = FixAtoms(indices=[atom.index for atom in atoms if atom.tag <= fixlayers])
+        atoms.set_constraint(c)
+
+    if vacuum != 0:
+        atoms.center(vacuum=vacuum, axis=2)
+
+    
     return atoms
 
 
