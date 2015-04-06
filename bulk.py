@@ -653,12 +653,12 @@ def rutile(symbols, a=4.59, c=2.958, u=0.305, mags=[2, 0], afm=False):
         down = -mags[0]
     
     bulk = Atoms([Atom(B, [0., 0., 0.], magmom=up, tag=1),
-                   Atom(B, 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=down, tag=1),
-                   Atom(X,  u*a1 + u*a2, magmom=mags[1], tag=2),
-                   Atom(X, -u*a1 - u*a2, magmom=mags[1], tag=2),
-                   Atom(X, (0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3, magmom=mags[1], tag=2),
-                   Atom(X, (0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3, magmom=mags[1], tag=2)],
-                  cell=[a1, a2, a3])
+                  Atom(B, 0.5*a1 + 0.5*a2 + 0.5*a3, magmom=down, tag=1),
+                  Atom(X,  u*a1 + u*a2, magmom=mags[1], tag=2),
+                  Atom(X, -u*a1 - u*a2, magmom=mags[1], tag=2),
+                  Atom(X, (0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3, magmom=mags[1], tag=2),
+                  Atom(X, (0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3, magmom=mags[1], tag=2)],
+                 cell=[a1, a2, a3])
     c = []
     for atom in bulk:
         if atom.tag == 1:
